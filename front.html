@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Object Classifier</title>
+  <!-- Import TensorFlow.js and the Coco SSD model -->
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@3.15.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@3.0.0/dist/coco-ssd.min.js"></script>
+</head>
+<body>
+  <h1>Object Classifier</h1>
+  <input type="file" id="imageInput" accept="image/*" capture="camera">
+  <img id="imagePreview" style="max-width: 100%; height: auto;">
+  <script>
+    // Get the image input element and add an event listener for when an image is selected
+    const imageInput = document.getElementById('imageInput');
+    imageInput.addEventListener('change', async (e) => {
+      // Get the selected image file
+      const imageFile = e.target.files[0];
+
+      // Display the selected image on the page
+      const imagePreview = document.getElementById('imagePreview');
+      imagePreview.src = URL.createObjectURL(imageFile);
+
+      // Load the TensorFlow.js Coco SSD model
+      const model = await cocoSsd.load();
+
+      // Load and classify the image using the Coco SSD model
+      const imageElement = document.createElement('img');
+      imageElement.src = URL.createObjectURL(imageFile);
+      imageElement.onload = async () => {
+        // Detect objects in the image
+        const predictions = await model.detect(imageElement);
+
+        // Display the object predictions on the page
+        const resultElement = document.createElement('div');
+        predictions.forEach((prediction) => {
+          const { class: label, score, bbox } = prediction;
+          const [x, y, width, height] = bbox;
+          const p = document.createElement('p');
+          p.textContent = `Label: ${label}, Score: ${score.toFixed(2)}`;
+          resultElement.appendChild(p);
+        });
+        document.body.appendChild(resultElement);
+      };
+    });
+  </script>
+</body>
+</html>
